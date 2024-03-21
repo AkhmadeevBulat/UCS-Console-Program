@@ -1,6 +1,8 @@
 from sys import platform
 from os import system
 from time import sleep, localtime, strftime
+import signal
+import functools
 
 
 def clear_terminal():  # Чистка терминала
@@ -12,3 +14,13 @@ def clear_terminal():  # Чистка терминала
 
 def time_moment():  # Возвращаю текущее время
     return strftime('%H:%M:%S', localtime())
+
+
+def handle_keyboard_interrupt(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except KeyboardInterrupt:
+            print()
+    return wrapper
