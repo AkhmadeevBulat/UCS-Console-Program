@@ -1,20 +1,30 @@
 import os
-import paramiko
 import json
 from time import sleep, localtime, strftime
-from os import system
 import re
 from string import Template
-from colorama import init, Fore, Back, Style
 from getpass import getpass
-from simple_term_menu import TerminalMenu
 from sys import platform
-
-from functions import handle_keyboard_interrupt, clear_terminal, find_file, create_env_file
+from pathlib import Path
+from functions import (handle_keyboard_interrupt,
+                       clear_terminal,
+                       create_env_file,
+                       check_env_variables,
+                       # check_env_key,
+                       update_env_variable,
+                       write_env_variable,
+                       check1,
+                       check_requirements)
+import settings
 
 
 @handle_keyboard_interrupt
 def main(pltf: str):
+    # Импорт необходимых библиотек, после установки
+    from simple_term_menu import TerminalMenu
+    import paramiko
+    import tqdm
+
     while True:  # Диалог с администратором
         clear_terminal(pltf)
         menu = ["Поиск устройства по ip/mac адресу",
@@ -60,24 +70,30 @@ def main(pltf: str):
                 break
 
 
-def before_main(pltf: str):  # Проверка файлов, переменных и подключений к важным ресурсам
+def before_main():
+    pltf = settings.pltf  # Платформа, на котором запущена программа
+    env_file = settings.env_file  # .env - файл
 
-    # Проверка на файл с переменными окружения
-    file_path = find_file(pltf)
-    if file_path.exists():
-        print("Файл ~/.env-ucs найден!")
-    else:
-        print("Файл ~/.env-ucs не найден!")
-        create_env_file(pltf)
-        print("Файл ~/.env-ucs создан!")
+    if not check_requirements("requirements.txt"):  # Установка необходимых библиотек, если они не установлены
+        exit()
 
-    # Проверка присутствие правильных переменных в файле
+    sleep(0.5)
+    clear_terminal(pltf=pltf)
 
+    if not check1(env_file=env_file):  # Проверка на файл с переменными окружения
+        exit()
 
-    sleep(2)
+    sleep(0.5)
+    clear_terminal(pltf=pltf)
+
+    # Импорт необходимых библиотек, после установки
+    from colorama import init, Fore, Back, Style
+
+    init(autoreset=True)  # Colorama
+
+    sleep(1)
     main(pltf=pltf)
 
 
 if __name__ == '__main__':
-    init(autoreset=True)
-    before_main(pltf=platform)
+    before_main()
